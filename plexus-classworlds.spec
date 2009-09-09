@@ -44,7 +44,7 @@
 
 Name:           plexus-classworlds
 Version:        1.2
-Release:        %mkrel 0.a11.1.0.1
+Release:        %mkrel 0.a11.1.0.2
 Epoch:          0
 Summary:        Default Plexus Container and Component API
 License:        Apache License 2.0

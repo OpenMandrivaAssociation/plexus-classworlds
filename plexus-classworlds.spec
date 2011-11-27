@@ -34,7 +34,7 @@
 
 Name:           %{parent}-%{subname}
 Version:        2.4
-Release:        2
+Release:        4
 Summary:        Plexus Classworlds Classloader Framework
 License:        ASL 2.0 and Plexus
 Group:          Development/Java

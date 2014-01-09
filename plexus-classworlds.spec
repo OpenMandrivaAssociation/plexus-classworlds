@@ -1,71 +1,16 @@
-# Copyright (c) 2000-2007, JPackage Project
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-#
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the
-#    distribution.
-# 3. Neither the name of the JPackage Project nor the names of its
-#    contributors may be used to endorse or promote products derived
-#    from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-
-
-%global parent plexus
-%global subname classworlds
-
-Name:           %{parent}-%{subname}
-Version:        2.4
-Release:        4
+%{?_javapackages_macros:%_javapackages_macros}
+Name:           plexus-classworlds
+Version:        2.5.1
+Release:        1.1%{?dist}
 Summary:        Plexus Classworlds Classloader Framework
 License:        ASL 2.0 and Plexus
-Group:          Development/Java
 URL:            http://plexus.codehaus.org/
-# git clone git://github.com/sonatype/plexus-classworlds.git
-# git archive --prefix="plexus-classworlds/" --format=tar plexus-classworlds-2.4 > plexus-classworlds-2.4.tar.gz
-Source0:        %{name}-%{version}.tar
-
+Source0:        https://github.com/sonatype/%{name}/archive/%{name}-%{version}.tar.gz
 BuildArch:      noarch
 
-BuildRequires:  jpackage-utils
-BuildRequires:  apache-commons-logging
-BuildRequires:  xml-commons-jaxp-1.3-apis
-BuildRequires:  maven2
-BuildRequires:  maven-compiler-plugin
-BuildRequires:  maven-install-plugin
-BuildRequires:  maven-jar-plugin
-BuildRequires:  maven-javadoc-plugin
-BuildRequires:  maven-resources-plugin
-BuildRequires:  maven-doxia
-BuildRequires:  maven-doxia-sitetools
-BuildRequires:  maven-release-plugin
-BuildRequires:  maven-shared-invoker
-BuildRequires:  maven-shared-reporting-impl
-BuildRequires:  maven-dependency-plugin
-BuildRequires:  maven-surefire-maven-plugin
-BuildRequires:  maven-surefire-provider-junit
-BuildRequires:  plexus-utils
-
-Requires(post):    jpackage-utils
-Requires(postun):  jpackage-utils
+BuildRequires:  maven-local
+BuildRequires:  mvn(org.apache.felix:maven-bundle-plugin)
+BuildRequires:  mvn(org.apache.maven.plugins:maven-dependency-plugin)
 
 %description
 Classworlds is a framework for container developers
@@ -79,64 +24,121 @@ classworlds.
 
 %package javadoc
 Summary:        Javadoc for %{name}
-Group:          Development/Java
-Requires:       jpackage-utils
 
 %description javadoc
 API documentation for %{name}.
 
 %prep
-%setup -q -n %{name}
-for j in $(find . -name "*.jar" | grep -v /test-data/ | grep -v /test-jars/); do
-  rm $j
-done
-
-# fix ant groupId
-sed -i 's:<groupId>ant</groupId>:<groupId>org.apache.ant</groupId>:' pom.xml
+%setup -q -n %{name}-%{name}-%{version}
+%mvn_file : %{name} plexus/classworlds
 
 %build
-
-export MAVEN_REPO_LOCAL=$(pwd)/.m2/repository
-mkdir -p $MAVEN_REPO_LOCAL
-
-mvn-jpp -e \
-  -Dmaven.repo.local=$MAVEN_REPO_LOCAL \
-  install javadoc:javadoc
-
+%mvn_build
 
 %install
-# jars
-install -Dpm 644 target/%{name}-%{version}.jar \
-  $RPM_BUILD_ROOT%{_javadir}/plexus/%{subname}.jar
-%add_to_maven_depmap org.codehaus.plexus %{name} %{version} JPP/%{parent} %{subname}
+%mvn_install
 
-# pom
-install -Dpm 644 pom.xml $RPM_BUILD_ROOT%{_mavenpomdir}/JPP.%{parent}-%{subname}.pom
+%files -f .mfiles
+%doc LICENSE.txt LICENSE-2.0.txt
 
-# javadoc
-install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}
-cp -pr target/site/apidocs/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}
+%files javadoc -f .mfiles-javadoc
+%doc LICENSE.txt LICENSE-2.0.txt
 
-%pre javadoc
-# workaround for rpm bug, can be removed in F-17
-[ $1 -gt 1 ] && [ -L %{_javadocdir}/%{name} ] && \
-rm -rf $(readlink -f %{_javadocdir}/%{name}) %{_javadocdir}/%{name} || :
+%changelog
+* Mon Aug 19 2013 Mikolaj Izdebski <mizdebsk@redhat.com> - 2.5.1-1
+- Update to upstream version 2.5.1
 
-%post
-%update_maven_depmap
+* Mon Aug 12 2013 Mikolaj Izdebski <mizdebsk@redhat.com> - 2.5-1
+- Update to upstream version 2.5
+- Update to current packaging guidelines
 
-%postun
-%update_maven_depmap
+* Sun Aug 04 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.4.2-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
 
-%files
-%defattr(-,root,root,-)
-%{_javadir}/%{parent}/*
-%{_mavenpomdir}/*
-%{_mavendepmapfragdir}/*
-%doc LICENSE.txt
+* Thu Apr 11 2013 Mat Booth <fedora@matbooth.co.uk> - 2.4.2-4
+- Remove superfluous BRs, fixes rhbz #915616
 
-%files javadoc
-%defattr(-,root,root,-)
-%doc LICENSE.txt
-%doc %{_javadocdir}/%{name}
+* Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.4.2-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
+* Wed Feb 06 2013 Java SIG <java-devel@lists.fedoraproject.org> - 2.4.2-2
+- Update for https://fedoraproject.org/wiki/Fedora_19_Maven_Rebuild
+- Replace maven BuildRequires with maven-local
+
+* Tue Jan 22 2013 Stanislav Ochotnicky <sochotnicky@redhat.com> - 2.4.2-1
+- Update to latest bugfix release 2.4.2 (#895445)
+
+* Wed Nov 21 2012 Stanislav Ochotnicky <sochotnicky@redhat.com> - 2.4-11
+- Install required ASL 2.0 license text
+
+* Wed Nov 21 2012 Mikolaj Izdebski <mizdebsk@redhat.com> - 2.4-10
+- Revert change from 2.4-9
+
+* Tue Nov 20 2012 Mikolaj Izdebski <mizdebsk@redhat.com> - 2.4-9
+- Provide and obsolete classworlds
+
+* Mon Nov 19 2012 Stanislav Ochotnicky <sochotnicky@redhat.com> - 2.4-8
+- Fix source URL to be stable
+
+* Tue Aug  7 2012 Stanislav Ochotnicky <sochotnicky@redhat.com> - 2.4-7
+- Export only proper OSGI packages
+- Do not generate "uses" OSGI clauses
+
+* Mon Aug 06 2012 Gerard Ryan <galileo@fedoraproject.org> - 2.4-6
+- Generate OSGI info using maven-plugin-bundle
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.4-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Thu Apr  5 2012 Mikolaj Izdebski <mizdebsk@redhat.com> - 2.4-4
+- Update to maven 3
+- Remove rpm bug workaround
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.4-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
+* Wed Feb 09 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.4-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
+
+* Wed Feb  2 2011 Stanislav Ochotnicky <sochotnicky@redhat.com> - 2.4-1
+- Update to latest upstream version
+- Drop ant build parts
+- Versionless jars & javadocs
+- Enable tests again
+
+* Tue Dec 21 2010 Alexander Kurtakov <akurtako@redhat.com> 2.2.3-2
+- Fix FTBFS.
+
+* Tue Jul 13 2010 Stanislav Ochotnicky <sochotnicky@redhat.com> - 2.2.3-1
+- Version bump
+- Fix few small packaging guidelines violations
+
+* Thu Aug 20 2009 Andrew Overholt <overholt@redhat.com> 0:1.2-0.a9.8
+- Bump release.
+
+* Wed Aug 19 2009 Andrew Overholt <overholt@redhat.com> 0:1.2-0.a9.7
+- Document sources and patches
+
+* Wed Aug 19 2009 Andrew Overholt <overholt@redhat.com> 0:1.2-0.a9.6
+- Update tarball-building instructions
+- Remove gcj support
+- Remove unnecessary post requirements
+
+* Thu May 14 2009 Fernando Nasser <fnasser@redhat.com> 0:1.2-0.a9.6
+- Fix license specification
+
+* Tue Apr 28 2009 Yong Yang <yyang@redhat.com> 0:1.2-0.a9.5
+- Add BRs maven2-plugin-surfire*, maven-doxia*
+- Rebuild with maven2-2.0.8 built in non-bootstrap mode
+
+* Mon Mar 16 2009 Yong Yang <yyang@redhat.com> 0:1.2-0.a9.4
+- rebuild with new maven2 2.0.8 built in bootstrap mode
+
+* Tue Jan 13 2009 Yong Yang <yyang@redhat.com> 0:1.2-0.a9.3jpp.1
+- re-build with maven
+
+* Tue Jan 06 2009 Yong Yang <yyang@redhat.com> 0:1.2-0.a9.2jpp.1
+- Imported into devel from dbhole's maven 2.0.8 packages
+
+* Wed Jan 30 2008 Deepak Bhole <dbhole@redhat.com> 0:1.2-0.a9.1jpp.1
+- Initial build -- merged from JPackage

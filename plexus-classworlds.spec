@@ -8,6 +8,10 @@ URL:            http://plexus.codehaus.org/
 Source0:        https://github.com/sonatype/%{name}/archive/%{name}-%{version}.tar.gz
 BuildArch:      noarch
 
+%if 0%{?fedora}
+%else
+BuildRequires:  junit
+%endif
 BuildRequires:  maven-local
 BuildRequires:  mvn(org.apache.felix:maven-bundle-plugin)
 BuildRequires:  mvn(org.apache.maven.plugins:maven-dependency-plugin)
@@ -31,6 +35,10 @@ API documentation for %{name}.
 %prep
 %setup -q -n %{name}-%{name}-%{version}
 %mvn_file : %{name} plexus/classworlds
+%if 0%{?fedora}
+%else
+%pom_add_dep junit:junit::test
+%endif
 
 %build
 %mvn_build

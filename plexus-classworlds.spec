@@ -1,8 +1,9 @@
 %{?_javapackages_macros:%_javapackages_macros}
 Name:           plexus-classworlds
-Version:        2.5.1
+Version:        2.5.2
 Release:        1.1%{?dist}
 Summary:        Plexus Classworlds Classloader Framework
+Group:		System/Libraries
 License:        ASL 2.0 and Plexus
 URL:            http://plexus.codehaus.org/
 Source0:        https://github.com/sonatype/%{name}/archive/%{name}-%{version}.tar.gz
@@ -15,6 +16,7 @@ BuildRequires:  junit
 BuildRequires:  maven-local
 BuildRequires:  mvn(org.apache.felix:maven-bundle-plugin)
 BuildRequires:  mvn(org.apache.maven.plugins:maven-dependency-plugin)
+Obsoletes: classworlds < 1.1-13
 
 %description
 Classworlds is a framework for container developers
@@ -35,6 +37,7 @@ API documentation for %{name}.
 %prep
 %setup -q -n %{name}-%{name}-%{version}
 %mvn_file : %{name} plexus/classworlds
+%mvn_alias : classworlds:classworlds
 %if 0%{?fedora}
 %else
 %pom_add_dep junit:junit::test

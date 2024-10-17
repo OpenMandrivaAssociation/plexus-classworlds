@@ -5,7 +5,7 @@ Release:        1.1%{?dist}
 Summary:        Plexus Classworlds Classloader Framework
 Group:		System/Libraries
 License:        ASL 2.0 and Plexus
-URL:            http://plexus.codehaus.org/
+URL:            https://plexus.codehaus.org/
 Source0:        https://github.com/sonatype/%{name}/archive/%{name}-%{version}.tar.gz
 BuildArch:      noarch
 

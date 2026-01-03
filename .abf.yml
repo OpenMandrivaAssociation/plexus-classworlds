@@ -1,4 +1,2 @@
-removed_sources:
-  plexus-classworlds-2.5.1.tar.gz: 9a744ce03308de74399329391f81a8c592a85ba6
 sources:
-  plexus-classworlds-2.5.2.tar.gz: 37565d7167aa146e183572ece19d0a112c78fd99
+  plexus-classworlds-2.8.0.tar.gz: 39962c87483e4033d5cefeb2268d62a1d8efa298

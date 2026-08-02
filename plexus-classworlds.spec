@@ -1,5 +1,5 @@
 Name:           plexus-classworlds
-Version:        2.8.0
+Version:        2.9.0
 Release:        1
 Summary:        Plexus Classworlds Classloader Framework
 License:        Apache-2.0 AND Plexus
@@ -19,7 +19,7 @@ represent a 'container' can benefit from the classloading control provided by
 classworlds.
 
 %prep
-%autosetup -p1 -C
+%autosetup -p1 -C -n plexus-classworlds-plexus-classworlds-2.9.0
 %mvn_file : %{name} plexus/classworlds
 %mvn_alias : classworlds:classworlds
 

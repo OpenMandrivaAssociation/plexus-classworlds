@@ -1,2 +1,5 @@
 sources:
+  plexus-classworlds-2.9.0.tar.gz: 2f5093aacd7bc30d8bde4278d1fffdf311f38d96
+  plexus-classworlds-2.7.0.tar.gz: dde5234d2feeffc9fae551ef25b6ef538bbed770
+removed_sources:
   plexus-classworlds-2.9.0.tar.gz: f7c33b069a1a6662294349fda528da9f59891997

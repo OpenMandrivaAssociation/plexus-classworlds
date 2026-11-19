@@ -1,5 +1,5 @@
 Name:		plexus-classworlds
-Version:	2.9.0
+Version:	2.12.1
 Release:	1
 Summary:	Plexus Classworlds classloader framework
 Group:		Development/Java
@@ -16,8 +16,10 @@ Requires:	java-current
 %description
 Classworlds is a framework for container developers who require complex
 manipulation of Java's ClassLoaders. This package builds %{version} from
-source. The 2.7.0 jar is installed beside it for callers that pin that
-release.
+source. 2.12.0 makes loadGlob require every glob segment to match.
+2.11 restores the deprecated org.codehaus.classworlds package and sets
+Automatic-Module-Name. The 2.7.0 jar is installed beside it for callers
+that pin that release.
 
 %prep
 %setup -q -n %{name}-%{name}-%{version}
@@ -25,7 +27,8 @@ release.
 find . \( -name '*.jar' -o -name '*.class' -o -name '*.so' -o -name '*.node' -o -name '*.wasm' \) -delete
 
 %build
-export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java}"
+export JAVA_HOME=%{_jvmdir}/java-openjdk
+export PATH="$JAVA_HOME/bin:$PATH"
 JAVAC="$JAVA_HOME/bin/javac"
 
 compile_tree() {
@@ -64,8 +67,10 @@ Path(os.environ["CW_OUT"]).write_text(text.replace("CWVER", version))
 PY
 }
 
-compile_tree . cw29 %{version}
+compile_tree . cw %{version}
 compile_tree plexus-classworlds-plexus-classworlds-2.7.0 cw27 2.7.0
+printf 'Manifest-Version: 1.0\nAutomatic-Module-Name: org.codehaus.plexus.classworlds\n' > cw.mf
+"$JAVA_HOME/bin/jar" ufm cw/plexus-classworlds.jar cw.mf
 
 %install
 sysjar install --buildroot %{buildroot} \
@@ -78,7 +83,7 @@ sysjar install --buildroot %{buildroot} \
 sed -i 's|/usr/share/sysjar/index/org.codehaus.plexus/plexus-classworlds\.sysjar|/usr/share/sysjar/index/org.codehaus.plexus/plexus-classworlds-2.7.0.sysjar|' .mfiles27
 
 sysjar install --buildroot %{buildroot} \
-	--artifact "cw29/plexus-classworlds.pom:cw29/plexus-classworlds.jar" \
+	--artifact "cw/plexus-classworlds.pom:cw/plexus-classworlds.jar" \
 	--file-name plexus-classworlds \
 	--alias classworlds:classworlds \
 	--filelist .mfiles
@@ -87,7 +92,8 @@ while IFS= read -r line; do
 done < .mfiles27
 
 %check
-export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java}"
+export JAVA_HOME=%{_jvmdir}/java-openjdk
+export PATH="$JAVA_HOME/bin:$PATH"
 cat > CwSmoke.java << 'EOF'
 public class CwSmoke {
     public static void main(String[] args) throws Exception {
@@ -105,10 +111,10 @@ public class CwSmoke {
     }
 }
 EOF
-"$JAVA_HOME/bin/javac" --release 8 -proc:none -cp cw29/plexus-classworlds.jar CwSmoke.java
-"$JAVA_HOME/bin/java" -cp "cw29/plexus-classworlds.jar:." CwSmoke cw29_ok > check29.log
-cat check29.log
-grep -F -q 'cw29_ok pin' check29.log
+"$JAVA_HOME/bin/javac" --release 8 -proc:none -cp cw/plexus-classworlds.jar CwSmoke.java
+"$JAVA_HOME/bin/java" -cp "cw/plexus-classworlds.jar:." CwSmoke cw_ok > check.log
+cat check.log
+grep -F -q 'cw_ok pin' check.log
 "$JAVA_HOME/bin/javac" --release 8 -proc:none -cp cw27/plexus-classworlds.jar CwSmoke.java
 "$JAVA_HOME/bin/java" -cp "cw27/plexus-classworlds.jar:." CwSmoke cw27_ok > check27.log
 cat check27.log
